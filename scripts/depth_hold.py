@@ -32,8 +32,8 @@ from auv1.controllers import PID
 
 # ── Tuning ───────────────────────────────────────────────────────────
 KP = 0.5    # thrust per metre of error (0.5 -> full thrust at 2 m off)
-KI = 0.05   # creeps out steady-state error (buoyancy imbalance)
-KD = 0.3    # damping — resists fast depth changes, kills overshoot
+KI = 0.2   # creeps out steady-state error (buoyancy imbalance)
+KD = 0.7   # damping — resists fast depth changes, kills overshoot
 
 LOOP_HZ = 10
 MAX_EFFORT = 0.6   # cap vertical demand at 60% while developing
@@ -62,7 +62,7 @@ def main() -> None:
         return
     print("Armed. Holding depth — Ctrl+C to stop.")
 
-    pid = PID(kp=KP, ki=KI, kd=KD, output_limit=MAX_EFFORT)
+    pid = PID(kp=KP, ki=KI, kd=KD, output_limit=MAX_EFFORT, integral_limit=1.0)
     period = 1.0 / LOOP_HZ
 
     try:
