@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from auv1.mavlink_io import MavlinkIO
 
-OUTPUT = 3  # MAIN 3 = first fin servo per SYS00 output mapping
+OUTPUT = 7  # MAIN 3 = first fin servo per SYS00 output mapping
 
 
 def main():

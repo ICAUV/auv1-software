@@ -5,6 +5,32 @@ The ONLY file in this project that imports pymavlink. Everything else
 a future migration to ROS2/MAVROS.
 """
 
+# ── Pixhawk 6C output mapping (AUV1, custom control — no frame mixing) ──
+# Our code owns all actuator outputs via DO_SET_SERVO. ArduSub does no
+# mixing for us; it provides sensors, telemetry, arming, and failsafes.
+#
+#  Output  Servo#  Assignment
+#  MAIN 1   1      (reserved by frame: Motor1 — leave unconnected)
+#  MAIN 2   2      (reserved by frame: Motor2 — leave unconnected)
+#  MAIN 3   3      (reserved by frame: Motor3 — leave unconnected)
+#  MAIN 4   4      fin servo — top
+#  MAIN 5   5      fin servo — bottom
+#  MAIN 6   6      fin servo — left
+#  MAIN 7   7      fin servo — right
+#  MAIN 8   8      stern T200 thruster ESC (surge)
+#  AUX 1    9      bow tunnel T200 thruster ESC (low-speed yaw)
+#                  (was ArduSub default Lights1=181 — set to Disabled)
+#  AUX 2    10     unused — left at ArduSub default Mount1Pitch
+#                  (camera tilt if we ever add one)
+#
+# Notes:
+# - DO_SET_SERVO only works on outputs whose SERVOn_FUNCTION = 0
+#   (Disabled); anything else answers COMMAND_ACK result=4 FAILED.
+# - ArduSub RE-APPLIES the frame's motor functions to MAIN 1-3 on every
+#   boot (SimpleROV-3 frame). Setting them Disabled does NOT survive
+#   restart — do not try to reclaim these outputs.
+# - Servo numbering continues across connectors: AUX n = servo 8+n.
+
 from pymavlink import mavutil
 
 
@@ -50,5 +76,16 @@ class MavlinkIO:
         )
 
     def wait_command_ack(self, timeout: float = 3.0):
-        """Return the next COMMAND_ACK message, or None on timeout."""
+        """Return the next COMMAND_ACK message, or None on timeout.
+
+        The ack's .result field (MAV_RESULT) tells you the command's fate:
+          0  ACCEPTED             executed successfully
+          1  TEMPORARILY_REJECTED can't right now (busy) — retrying may work
+          2  DENIED               command is invalid — will never work as sent
+          3  UNSUPPORTED          autopilot doesn't know this command
+          4  FAILED               understood but couldn't execute
+                                  (e.g. DO_SET_SERVO on a mixer-owned output)
+          5  IN_PROGRESS          started, not finished — more acks follow
+          6  CANCELLED            aborted
+        """
         return self.conn.recv_match(type="COMMAND_ACK", blocking=True, timeout=timeout)

@@ -14,9 +14,9 @@ Convention (to be VERIFIED on the bench, then update SIGNS below):
 
 # Flip entries to -1 on the bench if a fin moves the wrong way.
 SIGNS = {
-    "top":    {"yaw": +1, "roll": +1},
-    "bottom": {"yaw": +1, "roll": -1},
-    "left":   {"pitch": +1, "roll": +1},
+    "top":    {"yaw": +1, "roll": -1},
+    "bottom": {"yaw": -1, "roll": -1},
+    "left":   {"pitch": -1, "roll": -1},
     "right":  {"pitch": +1, "roll": -1},
 }
 
