@@ -75,6 +75,58 @@ class MavlinkIO:
             output, pwm_us, 0, 0, 0, 0, 0,
         )
 
+    def set_mode(self, mode_name: str) -> bool:
+        """Switch flight mode by name, e.g. "MANUAL", "ALT_HOLD".
+
+        Returns False if the autopilot doesn't know that mode.
+        """
+        mapping = self.conn.mode_mapping()
+        if mapping is None or mode_name not in mapping:
+            return False
+        self.conn.set_mode(mapping[mode_name])
+        return True
+
+    def arm(self, timeout: float = 5.0) -> bool:
+        """Arm the vehicle (enables outputs). Returns True when confirmed."""
+        self.conn.arducopter_arm()
+        try:
+            self.conn.motors_armed_wait(timeout=timeout)
+        except TypeError:
+            # older pymavlink versions take no timeout argument
+            self.conn.motors_armed_wait()
+        return bool(self.conn.motors_armed())
+
+    def disarm(self) -> None:
+        """Disarm the vehicle (outputs safe)."""
+        self.conn.arducopter_disarm()
+
+    def send_manual_control(self, forward: float = 0.0, lateral: float = 0.0,
+                            vertical: float = 0.0, yaw: float = 0.0) -> None:
+        """Send a MANUAL_CONTROL message (what a joystick sends via QGC).
+
+        All inputs are -1..+1. ArduSub's own mixer turns them into motor
+        commands for whatever frame it's configured with.
+
+        Used for SITL development: the simulated vehicle is a standard
+        thruster ROV, so DO_SET_SERVO on our custom outputs won't move it —
+        this will. On the real vehicle, our controllers will instead feed
+        the fin mixer / VBS via DO_SET_SERVO.
+
+        Wire format quirks: x/y/r are -1000..1000 (0 = neutral), but z is
+        0..1000 with 500 = neutral (up = more, down = less).
+        """
+        def clamp(v):
+            return max(-1.0, min(1.0, v))
+
+        self.conn.mav.manual_control_send(
+            self.conn.target_system,
+            int(clamp(forward) * 1000),
+            int(clamp(lateral) * 1000),
+            int(500 + clamp(vertical) * 500),
+            int(clamp(yaw) * 1000),
+            0,  # no buttons pressed
+        )
+
     def wait_command_ack(self, timeout: float = 3.0):
         """Return the next COMMAND_ACK message, or None on timeout.
 
