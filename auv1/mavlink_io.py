@@ -55,12 +55,17 @@ class MavlinkIO:
     def get_depth(self, timeout: float = 1.0):
         """Return depth in metres (positive down), or None on timeout.
 
-        Uses VFR_HUD.alt, which ArduSub reports as negative below surface.
+        Uses GLOBAL_POSITION_INT.relative_alt: altitude relative to HOME
+        in millimetres, negative below the surface. Chosen over VFR_HUD.alt
+        because that one is altitude above sea level — in SITL, home sits
+        584 m up in Australia, which made the vehicle "584 m above the
+        water" and sent the depth PID to full thrust. (Bug found night 2.)
         """
-        msg = self.conn.recv_match(type="VFR_HUD", blocking=True, timeout=timeout)
+        msg = self.conn.recv_match(type="GLOBAL_POSITION_INT",
+                                   blocking=True, timeout=timeout)
         if msg is None:
             return None
-        return -msg.alt
+        return -msg.relative_alt / 1000.0
 
     def set_servo_pwm(self, output: int, pwm_us: int) -> None:
         """Command a servo output (1-based, e.g. MAIN 3 -> output=3).
