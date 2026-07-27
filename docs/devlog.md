@@ -136,3 +136,42 @@ mavlink_io gained set_mode/arm/disarm/send_manual_control.
 **Next:** heading_hold.py in SITL; VBS mechanism decision + ordering;
 power budget. Back in HK ~Jul 27: waterproofing (roadmap wk 7),
 thruster bench pulses, fin SIGNS verification session.
+
+## 2026-07-27 — Heading hold + Git workflow lessons (US, final night)
+
+**Done:** `heading_hold.py` working in SITL: swings to target, holds,
+and crosses the 0/360 North seam cleanly (wrap_error verified). Tuned:
+KP=0.02, KI=0.005, KD=0.02, integral_limit=60, MAX_EFFORT=0.5. Both
+hold loops (depth + heading) now proven — the building blocks of every
+future autonomous mission.
+
+**Decisions:**
+- *Two-machine Git workflow:* Windows (GitHub Desktop) is the ONLY
+  committing side; the Ubuntu clone is pull-and-run only. Ubuntu-side
+  nano edits are throwaway experiments — final values get typed into
+  the Windows copy, committed, pulled. Rationale: a night of "local
+  changes would be overwritten" pain from editing both sides.
+  Revisit when code runs on the Pi or the team grows.
+- *PID gains are units-bound.* Heading error is degrees, depth error
+  is metres; gains and clamps do not transfer between them. Sizing
+  rule adopted: max I contribution = KI x integral_limit — choose that
+  product deliberately (heading: 0.005 x 60 = 0.3 effort), then the
+  limit is derived, not guessed.
+
+**Gotchas:**
+- Default integral_limit=0.5 is invisible on the degree scale (a 5 deg
+  error saturates it in ~0.1 s) — masked KI entirely until raised.
+- `git restore` doesn't clear STAGED changes: a half-finished
+  `git add`/commit (failed push, no git identity configured) blocked
+  pulls until `git fetch && git reset --hard origin/main`. Stray
+  `.save` file was a nano artifact.
+- Relative paths resolve from the current directory — scripts run from
+  `~` fail with "No such file". Check the prompt; `cd ~/auv1-software`
+  starts every session.
+
+**Next (back in HK):** VBS mechanism decision doc + orders (still the
+biggest open item — it slipped the US window); Blue Robotics order now
+ships to HK instead; waterproofing (roadmap wk 7); thruster bench
+pulses props-off; fin SIGNS verification with teleop; then port the
+hold loops to the real vehicle: same controllers, actuation stage
+swaps MANUAL_CONTROL for fin mixer + VBS.
