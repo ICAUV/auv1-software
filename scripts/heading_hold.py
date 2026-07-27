@@ -23,7 +23,7 @@ from auv1.controllers import PID
 
 # ── Tuning (sim values — real vehicle will differ) ───────────────────
 KP = 0.02   # effort per degree of error (0.02 -> full effort at 30 deg)
-KI = 0.0    # usually unnecessary for heading; add if it settles offset
+KI = 0.005    # usually unnecessary for heading; add if it settles offset
 KD = 0.01   # damping against fast swings
 
 LOOP_HZ = 10
@@ -66,7 +66,7 @@ def main() -> None:
         return
     print("Armed. Holding heading — Ctrl+C to stop.")
 
-    pid = PID(kp=KP, ki=KI, kd=KD, output_limit=MAX_EFFORT)
+    pid = PID(kp=KP, ki=KI, kd=KD, output_limit=MAX_EFFORT, integral_limit=60.0)
     period = 1.0 / LOOP_HZ
 
     try:
