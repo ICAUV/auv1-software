@@ -24,7 +24,7 @@ from auv1.controllers import PID
 # ── Tuning (sim values — real vehicle will differ) ───────────────────
 KP = 0.02   # effort per degree of error (0.02 -> full effort at 30 deg)
 KI = 0.005    # usually unnecessary for heading; add if it settles offset
-KD = 0.01   # damping against fast swings
+KD = 0.02   # damping against fast swings
 
 LOOP_HZ = 10
 MAX_EFFORT = 0.5
