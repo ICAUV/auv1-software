@@ -175,3 +175,43 @@ ships to HK instead; waterproofing (roadmap wk 7); thruster bench
 pulses props-off; fin SIGNS verification with teleop; then port the
 hold loops to the real vehicle: same controllers, actuation stage
 swaps MANUAL_CONTROL for fin mixer + VBS.
+
+## 2026-07-31 — Real-airframe controller, tests, CI (overnight build)
+
+*Prepared overnight by Claude; validate on next run-through.*
+
+**Done:**
+- `auv1/vehicle_control.py` — flight controller for the REAL airframe:
+  depth→pitch CASCADE (outer PID turns depth error into a bounded
+  pitch target, max 25°; inner PID flies the pitch on the fins), roll
+  stabilisation to 0°, and heading control with SPEED-BLENDED yaw
+  (bow tunnel carries yaw at rest, fades out by 0.4 forward effort as
+  the fins take over). All gains are starting guesses for the bench.
+- `tests/` — 21 unit tests covering the mixer contract, PID behaviour
+  (P/I/D, clamps, windup, reset), angle wrapping, the CSV logger, and
+  the cascade's conventions (deeper = nose down, pitch limit, bow
+  fade). All passing.
+- `.github/workflows/ci.yml` — GitHub Actions runs the tests on every
+  push; a red X on GitHub = broken control maths.
+- `pyproject.toml` — `pip install -e .` makes `import auv1` work
+  without sys.path tricks (old scripts unchanged); pytest configured.
+- `scripts/plot_log.py` — plots any telemetry CSV to PNG (depth &
+  heading vs setpoints, efforts; depth axis inverted so deeper reads
+  downward). Verified against a synthetic log.
+
+**Decisions:**
+- *Depth on the real vehicle = pitch-and-drive cascade* (no vertical
+  thruster). Depth authority exists only with forward speed until the
+  VBS exists; missions must not command stationary deep hover. VBS
+  decision itself remains deferred (interim: foam + weights trim).
+- *Unit tests assert conventions, not tuning* — and NOT numeric sign
+  relationships between fins: the SIGNS table is empirical (absorbs
+  servo mounting), so "top == -bottom" is not an invariant. Found when
+  freshly written tests failed against the bench-verified SIGNS — the
+  tests were wrong, the bench was right, which is the correct order
+  of authority.
+
+**Next:** bench session wiring VehicleFlightController to the real
+fins: a script reading real attitude and driving fins via the mixer
+at 20 Hz — pitch/roll stabilisation visible by tilting the hull by
+hand. Then thruster pulses, then pool.

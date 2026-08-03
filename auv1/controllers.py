@@ -1,9 +1,34 @@
 """PID controllers for depth-hold and heading-hold (roadmap week 6).
 
 Pure Python, no MAVLink.
+
+Also home to shared control helpers (angle wrapping) and the SIM-tuned
+gain sets, so every script builds its PIDs from one place. These gains
+were tuned against SITL (2026-07-26/27) — the real vehicle will be
+retuned at the pool and should get its own gain sets here.
 """
 
 import time
+
+# Gains tuned in SITL. Units matter: depth error is metres, heading
+# error is degrees — gains and clamps are NOT interchangeable.
+SIM_DEPTH_GAINS = dict(kp=0.5, ki=0.2, kd=0.7,
+                       output_limit=0.6, integral_limit=1.0)
+SIM_HEADING_GAINS = dict(kp=0.02, ki=0.005, kd=0.02,
+                         output_limit=0.5, integral_limit=60.0)
+
+# Empirically verified output-direction signs (SITL):
+# vertical effort is multiplied by DEPTH_DIRECTION before sending.
+SIM_DEPTH_DIRECTION = -1
+SIM_HEADING_DIRECTION = +1
+
+
+def wrap_error_deg(target_deg: float, current_deg: float) -> float:
+    """Shortest signed angular difference, -180..+180 degrees.
+
+    Headings live on a circle: 350 -> 10 is +20 (turn right), not -340.
+    """
+    return (target_deg - current_deg + 180.0) % 360.0 - 180.0
 
 
 class PID:

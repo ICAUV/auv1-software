@@ -1,0 +1,31 @@
+# Makes `auv1` a proper installable package.
+#
+# One-time setup per machine (from the repo root):
+#     pip install -e .
+# After that, `import auv1` works from anywhere — no sys.path tricks
+# needed. The existing scripts keep their sys.path lines so they also
+# run without this step; new code can rely on the install instead.
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auv1"
+version = "0.1.0"
+description = "Imperial College AUV Society - AUV1 control software"
+requires-python = ">=3.10"
+dependencies = [
+    "pymavlink",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "matplotlib"]
+teleop = ["pygame"]
+
+[tool.setuptools]
+packages = ["auv1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

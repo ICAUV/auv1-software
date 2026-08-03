@@ -1,0 +1,21 @@
+# Continuous Integration: every push and pull request runs the unit
+# tests on a fresh machine. A red X on GitHub means a commit broke the
+# control maths contracts — fix before it reaches the vehicle.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependencies
+        run: pip install pytest
+      - name: Run unit tests
+        run: python -m pytest -q
