@@ -94,6 +94,24 @@ def main() -> None:
     print(f"Controller: {js.get_name()}  "
           f"({js.get_numaxes()} axes, {js.get_numbuttons()} buttons)")
 
+    if debug:
+        # Controller identification needs NO vehicle: pure pygame loop.
+        print("DEBUG mode — move one control at a time. Ctrl+C to stop.")
+        try:
+            while True:
+                pygame.event.pump()
+                axes = [round(js.get_axis(i), 2)
+                        for i in range(js.get_numaxes())]
+                btns = [js.get_button(i)
+                        for i in range(js.get_numbuttons())]
+                print(f"axes={axes} buttons={btns}", end="\r")
+                time.sleep(1.0 / LOOP_HZ)
+        except KeyboardInterrupt:
+            print("\nDebug done.")
+        finally:
+            pygame.quit()
+        return
+
     io = MavlinkIO()
     print("Waiting for heartbeat...")
     if not io.wait_heartbeat():
