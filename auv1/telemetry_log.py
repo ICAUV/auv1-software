@@ -13,14 +13,22 @@ Usage:
 """
 
 import csv
+import os
 import time
 from pathlib import Path
 
 
 class CsvLogger:
     def __init__(self, prefix: str, fields: list):
-        logs_dir = Path(__file__).resolve().parents[1] / "logs"
-        logs_dir.mkdir(exist_ok=True)
+        # AUV1_LOG_DIR (if set) overrides the default repo-local logs/.
+        # Use it to collect all machines' logs in one archive, e.g. in
+        # Ubuntu/WSL:  export AUV1_LOG_DIR=/mnt/c/pojects/auv1-software/logs
+        # (add to ~/.bashrc to make it permanent). On the Pi, leave it
+        # unset and offload logs after each session.
+        override = os.environ.get("AUV1_LOG_DIR")
+        logs_dir = (Path(override) if override
+                    else Path(__file__).resolve().parents[1] / "logs")
+        logs_dir.mkdir(parents=True, exist_ok=True)
         stamp = time.strftime("%Y%m%d_%H%M%S")
         self.path = logs_dir / f"{prefix}_{stamp}.csv"
         self.fields = list(fields)
