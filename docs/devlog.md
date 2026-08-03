@@ -215,3 +215,40 @@ swaps MANUAL_CONTROL for fin mixer + VBS.
 fins: a script reading real attitude and driving fins via the mixer
 at 20 Hz — pitch/roll stabilisation visible by tilting the hull by
 hand. Then thruster pulses, then pool.
+
+## 2026-08-03 — Full sim-stack validation; software phase paused
+
+**Done:**
+- `mission_square.py` VALIDATED in SITL: dive to 2 m, four legs
+  N/E/S/W with depth held, surface, auto-disarm. First complete
+  autonomous mission.
+- `teleop_assisted.py` VALIDATED (Windows + Xbox pad): supervisory
+  control works — setpoints slew, PIDs fly, B-freeze and clean exit
+  confirmed. This is the pool piloting interface.
+- `plot_log.py` used on both machines; overnight batch committed;
+  CI live on GitHub.
+- Fix: `teleop.py --debug` no longer requires a vehicle/heartbeat —
+  controller identification is now a pure pygame loop. (Old behaviour
+  made a controller test fail for vehicle reasons on Windows.)
+- `CsvLogger` honours `AUV1_LOG_DIR` env var: set it in Ubuntu to
+  `/mnt/c/pojects/auv1-software/logs` to collect all logs in one
+  Windows-side archive. Unset on the Pi (offload after sessions).
+
+**Decisions:**
+- *Software phase paused here* — sim-side stack is complete and
+  validated (hold loops, supervisory teleop, missions, logging,
+  plots, tests, CI). Focus shifts to hardware/CAD (waterproofing,
+  thrusters, hull) per roadmap wks 7-9.
+- Full project manual written to Teams:
+  07_Documentation/AUV1_Software_Manual_v1.0.docx (setup-from-zero,
+  operations, troubleshooting compendium, decision summary).
+
+**Gotchas:**
+- Windows `pip` and `py` can bind different Python installs — always
+  `py -m pip install ...` so packages land where scripts run.
+- Log CSVs are machine-local and gitignored by design; only code
+  syncs through GitHub.
+
+**Next (hardware era):** bench `vehicle_stab_test` wiring the cascade
+to real fins; thruster props-off pulses; fin SIGNS re-verify after
+any remount; waterproofing; pool sessions with logged tuning runs.
