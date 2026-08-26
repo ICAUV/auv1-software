@@ -56,6 +56,13 @@ cd ~/auv1-software && git pull
 python3 scripts/mission_square.py
 ```
 
+**Pool simulator (no ArduSub needed):** the real-airframe controller
+(`vehicle_control`, `fin_mixer`) can also be flown against a Python
+physics model of the torpedo in a pool, with a 3D viewer — clone
+[`ICAUV/auv1-sim`](https://github.com/ICAUV/auv1-sim) next to this repo
+and see its README. Same control code; `SimLink` stands in for
+`MavlinkIO`.
+
 ## Layout
 
 | Path | Purpose |
