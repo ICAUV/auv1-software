@@ -252,3 +252,39 @@ hand. Then thruster pulses, then pool.
 **Next (hardware era):** bench `vehicle_stab_test` wiring the cascade
 to real fins; thruster props-off pulses; fin SIGNS re-verify after
 any remount; waterproofing; pool sessions with logged tuning runs.
+
+## 2026-08-26 — Pool simulator (auv1-sim) + folder rename
+
+**Done:**
+- New sibling project `auv1-sim` (software-in-the-loop): 6-DOF torpedo
+  model in a configurable pool, noisy sensors (GPS surface-only),
+  dead-reckoning estimator, `SimLink` that mirrors `MavlinkIO` so
+  `vehicle_control.VehicleFlightController` + `fin_mixer` run UNCHANGED
+  against it (`run_mission.py --link real` swaps the Pixhawk back in).
+  Single-file three.js viewer + `bake_viewer.py` for one-file sharing.
+- Repo folder renamed `C:\pojects` -> `C:\projects` (typo). Only the
+  `AUV1_LOG_DIR` comment in `telemetry_log.py` referenced the old path;
+  the 2026-08-03 entry above still shows the old spelling on purpose.
+
+**Decisions:**
+- Standalone Python sim over ArduSub's JSON SITL backend — one-day
+  budget; the JSON backend (UDP 9002, `sim_vehicle.py -f JSON:127.0.0.1`)
+  stays the upgrade path if we want ArduSub's EKF in the loop.
+- Sim findings NOT applied to repo code (owner's call): fin_mixer.SIGNS
+  left/right pitch-vs-roll signs are physically inconsistent; default
+  gains chatter fins ±20° at 10 Hz (D terms amplify depth noise through
+  the cascade) and leave ~5° pitch / ~7° heading steady-state error (no
+  ki); pitch-and-drive loses depth below ~1 m/s; rudder-only turn radius
+  ~7 m at 1 m/s so missions slow to forward 0.15 and turn on the bow
+  thruster. `--tuned` in run_mission.py holds the sim-suggested gains.
+
+**Gotchas:**
+- `.html` opening as source text = Windows file association points at
+  an editor; right-click > Open with > Edge/Chrome.
+- After the folder rename: re-set `AUV1_LOG_DIR` in Ubuntu `~/.bashrc`
+  to `/mnt/c/projects/auv1-software/logs`; GitHub Desktop needs
+  "Locate" once; Cowork/VS Code recent-folder entries need re-adding.
+
+**Next:** export `AUV1P-HULL-A001-V1 General Assembly.SLDASM` as a
+single STL for the viewer; decide on the SIGNS fix and D-term filtering
+before the bench `vehicle_stab_test`.

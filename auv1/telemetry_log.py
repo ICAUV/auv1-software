@@ -22,7 +22,7 @@ class CsvLogger:
     def __init__(self, prefix: str, fields: list):
         # AUV1_LOG_DIR (if set) overrides the default repo-local logs/.
         # Use it to collect all machines' logs in one archive, e.g. in
-        # Ubuntu/WSL:  export AUV1_LOG_DIR=/mnt/c/pojects/auv1-software/logs
+        # Ubuntu/WSL:  export AUV1_LOG_DIR=/mnt/c/projects/auv1-software/logs
         # (add to ~/.bashrc to make it permanent). On the Pi, leave it
         # unset and offload logs after each session.
         override = os.environ.get("AUV1_LOG_DIR")
