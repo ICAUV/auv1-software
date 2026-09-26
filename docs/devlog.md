@@ -288,3 +288,68 @@ any remount; waterproofing; pool sessions with logged tuning runs.
 **Next:** export `AUV1P-HULL-A001-V1 General Assembly.SLDASM` as a
 single STL for the viewer; decide on the SIGNS fix and D-term filtering
 before the bench `vehicle_stab_test`.
+
+## 2026-09-04 — Fin SIGNS bench-verified
+
+**Done:** all three fin axes (pitch, yaw, roll) exercised on the real
+servos with `scripts/teleop.py`; every fin rotates the right way on
+every axis. `fin_mixer.SIGNS` is now bench-verified truth.
+
+**Decisions:**
+- The sim's `vehicle.json` `force_sign` was an assumption that does not
+  match the real servo mounting — update it from bench observation
+  before trusting any sim sign result; the repo SIGNS are not changed.
+- Phase 0 software plan agreed: low-pass the PID D term (`d_tau`,
+  default 0), promote sim-tuned gains (with ki) into `vehicle_control`,
+  one retune pass, then mission layer in sim → bench `vehicle_stab_test`.
+
+**Next:** first pool run includes a low-speed open-loop pitch step as a
+routine safety check.
+
+## 2026-09-10 — Real thrusters: T500 stern, T200 bow
+
+**Done:** interim T100s replaced. MAIN 8 = T500 (surge), AUX 1 = T200
+(bow tunnel). Both on Blue Robotics Basic ESC at 4S (~14.8 V; plain
+Basic ESC is rated to 18 V). No code change — same 1100–1900 µs / 1500
+stop language as before.
+
+**Gotchas:**
+- T500 draws up to ~25 A at 16 V — bench pulses only, on the PSU.
+- `THRUSTER_RANGE` stays ±100 µs until the vehicle is in water.
+
+## 2026-09-26 — Control loop moves onto the Pi (vehicle daemon)
+
+**Done:**
+- `teleop.py` split in two at the stick values: `scripts/ground_station.py`
+  (laptop: Xbox → UDP setpoint packet, 20 Hz) and
+  `scripts/vehicle_daemon.py` (Pi: packet → `fin_mixer.mix` →
+  `DO_SET_SERVO`, link watchdog, 1 Hz GCS heartbeat, telemetry back,
+  CSV log). Wire is `auv1/setpoint_link.py` (plain sockets + JSON, no
+  MAVLink). 4 loopback tests in `tests/test_setpoint_link.py`.
+- Failsafes live on the vehicle: no packet for 0.7 s → all outputs
+  neutral; 5 s → disarm; B held → neutral; any exit → neutral + disarm.
+  Thrusters off unless `--thrusters`.
+- Step-by-step setup in `docs/pi-migration.md` (SSH, venv, BlueOS
+  endpoint `UDP Client → 127.0.0.1:14551`, dry run against SITL,
+  systemd autostart for later).
+- Stale labels fixed: output table in `mavlink_io.py` (T500/T200),
+  README vehicle line, `fin_mixer` docstring (SIGNS verified),
+  `test_servo.py` "MAIN 3" comments (code was always output 7).
+
+**Decisions:**
+- Raw teleop first; assisted mode (`VehicleFlightController` inside
+  the daemon) comes next — the laptop side won't change for it.
+- Pi replies to whatever address the packets came from, so the laptop
+  needs no fixed IP for this link (BlueOS's own endpoint still does).
+- `FS_PILOT_INPUT = 0` on ArduSub: the daemon never sends
+  `MANUAL_CONTROL`, so the default would disarm 3 s after every arm.
+  The daemon's own watchdog is the failsafe now.
+
+**Gotchas:**
+- `SYS00 Vehicle Configuration v1.0.docx` (Teams) still shows the
+  pre-July output map (MAIN 1/2 thrusters, MAIN 3–6 fins) and "stern
+  T200" — needs a v1.1.
+
+**Next:** run the guide end to end on the bench (props off); confirm
+`SERVO4..9_FUNCTION = 0` in QGC first; then `--thrusters`, then
+systemd autostart before the first tetherless attempt.

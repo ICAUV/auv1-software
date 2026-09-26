@@ -17,8 +17,8 @@ a future migration to ROS2/MAVROS.
 #  MAIN 5   5      fin servo — bottom
 #  MAIN 6   6      fin servo — left
 #  MAIN 7   7      fin servo — right
-#  MAIN 8   8      stern thruster ESC (surge) — T100 interim, T200/T500 later
-#  AUX 1    9      bow tunnel thruster ESC (low-speed yaw) — T100 interim
+#  MAIN 8   8      stern thruster ESC (surge) — T500 (Basic ESC, 4S)
+#  AUX 1    9      bow tunnel thruster ESC (low-speed yaw) — T200
 #                  (was ArduSub default Lights1=181 — set to Disabled)
 #  AUX 2    10     unused — left at ArduSub default Mount1Pitch
 #                  (camera tilt if we ever add one)

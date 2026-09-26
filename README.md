@@ -11,7 +11,7 @@ bench work (fin stabilisation via the cascade controller) is next.
 
 ## Vehicle
 
-Torpedo-style AUV: stern T200 (surge), lateral bow tunnel T200
+Torpedo-style AUV: stern T500 (surge), lateral bow tunnel T200
 (low-speed yaw), four stern fins in "+" configuration (pitch/roll/yaw
 at speed). Depth on the real vehicle is **pitch-and-drive** (no
 vertical thruster); a variable-buoyancy system is deferred (foam +

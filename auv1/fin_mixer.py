@@ -6,13 +6,14 @@ Pure Python, no MAVLink. Fin layout viewed from behind the vehicle:
    LEFT  +  RIGHT
        BOTTOM
 
-Convention (to be VERIFIED on the bench, then update SIGNS below):
+Convention (SIGNS bench-verified 2026-09-04 on all three axes):
 - TOP and BOTTOM act as rudders -> yaw
 - LEFT and RIGHT act as stern planes -> pitch
 - All four differentially -> roll
 """
 
-# Flip entries to -1 on the bench if a fin moves the wrong way.
+# Bench-verified direction facts (2026-09-04, pitch/yaw/roll via teleop).
+# Do not change without re-verifying on the vehicle after any servo remount.
 SIGNS = {
     "top":    {"yaw": +1, "roll": -1},
     "bottom": {"yaw": -1, "roll": -1},

@@ -1,8 +1,8 @@
-"""Bench test: write path. Sweeps fin servo on MAIN 3 (safe if nothing wired).
+"""Bench test: write path. Sweeps fin servo on MAIN 7 (safe if nothing wired).
 
 Run:  python scripts/test_servo.py
 With no servo attached, a COMMAND_ACK result of 0 (ACCEPTED) still proves
-the command chain works. With a BEC-powered servo on MAIN 3, it sweeps.
+the command chain works. With a 12 V-powered servo on MAIN 7, it sweeps.
 """
 
 import sys
@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from auv1.mavlink_io import MavlinkIO
 
-OUTPUT = 7  # MAIN 3 = first fin servo per SYS00 output mapping
+OUTPUT = 7  # MAIN 7 = right fin servo (see output map in auv1/mavlink_io.py)
 
 
 def main():
